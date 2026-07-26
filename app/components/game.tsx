@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
@@ -12,11 +12,25 @@ const Row = dynamic(() => import('@/app/components/row'), { ssr: false });
 export default function Game() {
     const [resetKey, setResetKey] = useState(0);
     const [, setTick] = useState(0);
+    const [isPortrait, setIsPortrait] = useState(false);
 
     useEffect(() => {
         const handleUpdate = () => setTick((t) => t + 1);
+
+        const handleResize = () => {
+            setIsPortrait(window.innerHeight > window.innerWidth);
+        };
+
+        // Vérification initiale de l'orientation
+        handleResize();
+
         window.addEventListener("storage", handleUpdate);
-        return () => window.removeEventListener("storage", handleUpdate);
+        window.addEventListener("resize", handleResize);
+
+        return () => {
+            window.removeEventListener("storage", handleUpdate);
+            window.removeEventListener("resize", handleResize);
+        };
     }, []);
 
     const handleReset = () => {
@@ -25,36 +39,42 @@ export default function Game() {
     };
 
     return (
-        <div className="flex flex-col justify-center items-center gap-2 p-2">
-            <div className="flex flex-col items-center gap-2 w-fit">
-                <div className="flex justify-end items-center gap-2 w-full">
-                    <Button title="Reset" onClickAction={handleReset} />
-                </div>
+        <div className="flex min-h-screen w-full justify-center items-center overflow-hidden">
+            <div
+                className={`flex flex-col justify-center items-center gap-2 p-2 transition-transform duration-300 ${
+                    isPortrait ? "rotate-90 scale-90" : ""
+                }`}
+            >
+                <div className="flex flex-col items-center gap-2 w-fit">
+                    <div className="flex justify-end items-center gap-2 w-full">
+                        <Button title="Reset" onClickAction={handleReset} />
+                    </div>
 
-                <Row key={`red-${resetKey}`} color="red" />
-                <Row key={`yellow-${resetKey}`} color="yellow" />
-                <Row key={`green-${resetKey}`} color="green" />
-                <Row key={`blue-${resetKey}`} color="blue" />
+                    <Row key={`red-${resetKey}`} color="red" />
+                    <Row key={`yellow-${resetKey}`} color="yellow" />
+                    <Row key={`green-${resetKey}`} color="green" />
+                    <Row key={`blue-${resetKey}`} color="blue" />
 
-                <div className="flex justify-end items-center gap-2 w-full">
-                    <p>Malus : </p>
-                    {Array.from({ length: 4 }, (_, i) => i + 1).map((num) => (
-                        <MalusBtn key={`malus-${num}-${resetKey}`} initChecked={GameUtil.getMalus() >= num} />
-                    ))}
-                </div>
+                    <div className="flex justify-end items-center gap-2 w-full">
+                        <p>Malus : </p>
+                        {Array.from({ length: 4 }, (_, i) => i + 1).map((num) => (
+                            <MalusBtn key={`malus-${num}-${resetKey}`} initChecked={GameUtil.getMalus() >= num} />
+                        ))}
+                    </div>
 
-                <div className="flex justify-start items-center gap-2 w-full">
-                    <ScoreCase color={"red"} value={GameUtil.totalRow("red")} />
-                    <p>+</p>
-                    <ScoreCase color={"yellow"} value={GameUtil.totalRow("yellow")} />
-                    <p>+</p>
-                    <ScoreCase color={"green"} value={GameUtil.totalRow("green")} />
-                    <p>+</p>
-                    <ScoreCase color={"blue"} value={GameUtil.totalRow("blue")} />
-                    <p>-</p>
-                    <ScoreCase color={"gray"} value={GameUtil.totalMalus()} />
-                    <p>=</p>
-                    <ScoreCase color={"gray"} value={GameUtil.total()} />
+                    <div className="flex justify-start items-center gap-2 w-full">
+                        <ScoreCase color={"red"} value={GameUtil.totalRow("red")} />
+                        <p>+</p>
+                        <ScoreCase color={"yellow"} value={GameUtil.totalRow("yellow")} />
+                        <p>+</p>
+                        <ScoreCase color={"green"} value={GameUtil.totalRow("green")} />
+                        <p>+</p>
+                        <ScoreCase color={"blue"} value={GameUtil.totalRow("blue")} />
+                        <p>-</p>
+                        <ScoreCase color={"gray"} value={GameUtil.totalMalus()} />
+                        <p>=</p>
+                        <ScoreCase color={"gray"} value={GameUtil.total()} />
+                    </div>
                 </div>
             </div>
         </div>

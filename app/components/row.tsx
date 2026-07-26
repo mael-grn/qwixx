@@ -69,7 +69,7 @@ export default function Row({ color }: rowParams) {
     const styles = colorStyles[color];
 
     return (
-        <div className={`flex w-fit relative overflow-hidden ${styles.bgContainer} gap-1 items-center p-2 rounded-xl`}>
+        <div className={`flex w-fit relative overflow-hidden ${styles.bgContainer} gap-1 items-center p-1 rounded-xl`}>
             {(color === "green" || color === "blue"
                     ? Array.from({ length: 11 }, (_, i) => 12 - i) // 12 à 2
                     : Array.from({ length: 11 }, (_, i) => i + 2)  // 2 à 12
@@ -86,7 +86,7 @@ export default function Row({ color }: rowParams) {
             {
                 rowFinished && <span className={"w-full h-full bg-black/35 absolute left-0 top-0"}/>
             }
-            <div onClick={rowFinished ? unFinishRow : () => console.log("You cannot finish this row at the moment")} className={`w-10 h-10 ml-4 rounded-full relative overflow-hidden border-2 ${styles.borderBtn} ${
+            <div onClick={rowFinished ? unFinishRow : () => console.log("You cannot finish this row at the moment")} className={`w-8 h-8 ml-4 rounded-full relative overflow-hidden border-2 ${styles.borderBtn} ${
                 rowFinished ? "bg-white cursor-pointer" : "bg-gray-300 cursor-not-allowed"
             } flex items-center justify-center`}>
                 <img src={rowFinished ? "lock-close.svg" : "lock-open.svg"} alt="close row" className={" w-4 h-4"} />
@@ -109,7 +109,7 @@ function RowButton({ color, number, checked, canCheck, onPress }: buttonParams) 
     return (
         <div
             onClick={canCheck ? onPress : undefined}
-            className={`w-12 h-12 rounded-2xl relative overflow-hidden border-2 ${styles.borderBtn} ${
+            className={`w-10 h-10 rounded-2xl relative overflow-hidden border-2 ${styles.borderBtn} ${
                 checked ? styles.bgChecked : canCheck ? "bg-white" : "bg-gray-300"
             } ${canCheck ? "cursor-pointer" : "cursor-not-allowed"} flex items-center justify-center`}
         >

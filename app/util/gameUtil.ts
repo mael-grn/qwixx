@@ -24,6 +24,11 @@ export class GameUtil {
         this.dispatchStorageEvent();
     }
 
+    static gameAlreadyStarted() : boolean {
+        if (typeof window === "undefined") return false;
+        return localStorage.getItem("checked") != null;
+    }
+
     static recoverChecked(): checkedMatrice {
         if (typeof window === "undefined") return this.getEmptyMatrice();
 
