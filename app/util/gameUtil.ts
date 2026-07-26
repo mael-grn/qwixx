@@ -107,7 +107,11 @@ export class GameUtil {
         const list = checked[color] ?? [];
         let count = list.length;
 
-        if (count >= 5 && (list.includes(12) || list.includes(2))) {
+        if (count >= 5 &&  list.includes(12) && ["red", "yellow"].includes(color)) {
+            count++;
+        }
+
+        if (count >= 5 &&  list.includes(2) && ["green", "blue"].includes(color)) {
             count++;
         }
 

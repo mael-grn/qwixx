@@ -39,7 +39,7 @@ export default function Game() {
                 <div className="flex justify-end items-center gap-2 w-full">
                     <p>Malus : </p>
                     {Array.from({ length: 4 }, (_, i) => i + 1).map((num) => (
-                        <MalusBtn key={num} initChecked={GameUtil.getMalus() >= num} />
+                        <MalusBtn key={`malus-${num}-${resetKey}`} initChecked={GameUtil.getMalus() >= num} />
                     ))}
                 </div>
 
