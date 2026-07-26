@@ -53,6 +53,8 @@ export default function Game() {
                     <ScoreCase color={"blue"} value={GameUtil.totalRow("blue")} />
                     <p>-</p>
                     <ScoreCase color={"gray"} value={GameUtil.totalMalus()} />
+                    <p>=</p>
+                    <ScoreCase color={"gray"} value={GameUtil.total()} />
                 </div>
             </div>
         </div>
