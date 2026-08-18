@@ -12,7 +12,7 @@ export interface rowParams {
 
 const colorStyles: Record<
     rowColor,
-    { bgContainer: string; bgChecked: string; borderBtn: string; textBtn: string; glowShadow: string }
+    { bgContainer: string; bgChecked: string; borderBtn: string; textBtn: string; glowShadow: string; hex: string }
 > = {
     red: {
         bgContainer: "bg-red/75",
@@ -20,6 +20,7 @@ const colorStyles: Record<
         borderBtn: "border-red",
         textBtn: "text-red",
         glowShadow: "rgba(239, 68, 68, 0.7)",
+        hex: "#ef4444",
     },
     yellow: {
         bgContainer: "bg-yellow/75",
@@ -27,6 +28,7 @@ const colorStyles: Record<
         borderBtn: "border-yellow",
         textBtn: "text-yellow",
         glowShadow: "rgba(234, 179, 8, 0.8)",
+        hex: "#eab308",
     },
     green: {
         bgContainer: "bg-green/75",
@@ -34,6 +36,7 @@ const colorStyles: Record<
         borderBtn: "border-green",
         textBtn: "text-green",
         glowShadow: "rgba(34, 197, 94, 0.7)",
+        hex: "#22c55e",
     },
     blue: {
         bgContainer: "bg-blue/75",
@@ -41,6 +44,7 @@ const colorStyles: Record<
         borderBtn: "border-blue",
         textBtn: "text-blue",
         glowShadow: "rgba(59, 130, 246, 0.7)",
+        hex: "#3b82f6",
     },
 };
 
@@ -79,6 +83,24 @@ export default function Row({ color, delay = 0 }: rowParams) {
         return checked[color] ?? [];
     });
     const [rowFinished, setRowFinished] = useState(GameUtil.listFinished(color));
+    const [showAccomplishment, setShowAccomplishment] = useState(false);
+
+    const isDecreasing = color === "green" || color === "blue";
+    const lastNumber = isDecreasing ? 2 : 12;
+    const styles = colorStyles[color];
+    const prevValuesRef = useRef(values);
+
+    useEffect(() => {
+        const wasChecked = prevValuesRef.current.includes(lastNumber);
+        const isNowChecked = values.includes(lastNumber);
+
+        if (!wasChecked && isNowChecked) {
+            setShowAccomplishment(true);
+            const timer = setTimeout(() => setShowAccomplishment(false), 2600);
+            return () => clearTimeout(timer);
+        }
+        prevValuesRef.current = values;
+    }, [values, lastNumber]);
 
     const onToggle = (number: number) => {
         GameUtil.toggleCase(color, number);
@@ -102,60 +124,134 @@ export default function Row({ color, delay = 0 }: rowParams) {
         }
     };
 
-    const styles = colorStyles[color];
-    const isDecreasing = color === "green" || color === "blue";
     const numbers = isDecreasing
         ? Array.from({ length: 11 }, (_, i) => 12 - i)
         : Array.from({ length: 11 }, (_, i) => i + 2);
-    const lastNumber = isDecreasing ? 2 : 12;
 
     return (
-        <motion.div
-            variants={getContainerVariants(delay)}
-            initial="hidden"
-            animate="show"
-            className={`flex w-fit relative overflow-hidden ${styles.bgContainer} gap-1 items-center p-1 rounded-2xl`}
-        >
-            {numbers.map((num) => (
-                <RowButton
-                    key={num}
-                    color={color}
-                    number={num}
-                    checked={values.includes(num)}
-                    canCheck={GameUtil.canCheck(color, num)}
-                    onPress={() => onToggle(num)}
-                />
-            ))}
-
-            <AnimatePresence>
-                {rowFinished && (
-                    <motion.span
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.25 }}
-                        className="w-full h-full bg-black/35 absolute left-0 top-0 pointer-events-none z-0"
+        <div className="relative">
+            <motion.div
+                variants={getContainerVariants(delay)}
+                initial="hidden"
+                animate="show"
+                className={`flex w-fit relative overflow-hidden ${styles.bgContainer} gap-1 items-center p-1 rounded-2xl`}
+            >
+                {numbers.map((num) => (
+                    <RowButton
+                        key={num}
+                        color={color}
+                        number={num}
+                        checked={values.includes(num)}
+                        canCheck={GameUtil.canCheck(color, num)}
+                        onPress={() => onToggle(num)}
                     />
+                ))}
+
+                <AnimatePresence>
+                    {rowFinished && (
+                        <motion.span
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.25 }}
+                            className="w-full h-full bg-black/35 absolute left-0 top-0 pointer-events-none z-0"
+                        />
+                    )}
+                </AnimatePresence>
+
+                <motion.div
+                    onClick={rowFinished ? unFinishRow : () => console.log("You cannot finish this row at the moment")}
+                    whileHover={rowFinished ? { scale: 1.1, rotate: 6 } : undefined}
+                    whileTap={rowFinished ? { scale: 0.9 } : undefined}
+                    className={`w-8 h-8 ml-4 rounded-full relative z-10 overflow-hidden border-2 shadow-sm ${styles.borderBtn} ${
+                        rowFinished ? "bg-white cursor-pointer" : "bg-gray-300 cursor-not-allowed opacity-75"
+                    } flex items-center justify-center`}
+                >
+                    <motion.img
+                        src={rowFinished ? "lock-close.svg" : "lock-open.svg"}
+                        alt="close row"
+                        className="w-4 h-4"
+                        animate={{ scale: rowFinished ? [0.7, 1] : 1, rotate: rowFinished ? [-30, 0] : 0 }}
+                        transition={{ type: "spring", stiffness: 350, damping: 15 }}
+                    />
+                </motion.div>
+            </motion.div>
+
+            {/* Animation d'accomplissement majeure */}
+            <AnimatePresence>
+                {showAccomplishment && (
+                    <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none">
+                        {/* Onde de choc et halo étendu */}
+                        <motion.div
+                            initial={{ scale: 0.5, opacity: 1 }}
+                            animate={{ scale: [0.5, 1.4, 2], opacity: [0.9, 0.4, 0] }}
+                            transition={{ duration: 1.2, ease: "easeOut" }}
+                            className="absolute -inset-10 rounded-3xl"
+                            style={{
+                                background: `radial-gradient(circle, ${styles.glowShadow} 0%, rgba(255,255,255,0) 70%)`,
+                            }}
+                        />
+
+                        {/* Éclat d'impact */}
+                        <motion.div
+                            initial={{ opacity: 0.8, scale: 0.8 }}
+                            animate={{ opacity: 0, scale: 1.1 }}
+                            transition={{ duration: 0.4 }}
+                            className="absolute inset-0 bg-white rounded-2xl"
+                        />
+
+                        {/* Particules et étincelles projetées */}
+                        {Array.from({ length: 16 }).map((_, i) => {
+                            const angle = (i / 16) * 360;
+                            const distance = 80 + (i % 3) * 35;
+                            const rad = (angle * Math.PI) / 180;
+                            const x = Math.cos(rad) * distance;
+                            const y = Math.sin(rad) * distance;
+
+                            return (
+                                <motion.div
+                                    key={i}
+                                    initial={{ x: 0, y: 0, scale: 1, opacity: 1 }}
+                                    animate={{
+                                        x,
+                                        y,
+                                        scale: [1, 1.5, 0],
+                                        opacity: [1, 0.9, 0],
+                                        rotate: [0, 180],
+                                    }}
+                                    transition={{ duration: 1 + (i % 4) * 0.2, ease: "easeOut" }}
+                                    className="absolute w-3 h-3 rounded-full shadow-lg"
+                                    style={{
+                                        backgroundColor: i % 2 === 0 ? "#ffffff" : styles.hex,
+                                        boxShadow: `0 0 10px ${styles.hex}`,
+                                    }}
+                                />
+                            );
+                        })}
+
+                        {/* Badge central d'accomplissement */}
+                        <motion.div
+                            initial={{ scale: 0, rotate: -25, opacity: 0 }}
+                            animate={{
+                                scale: [0, 1.25, 1],
+                                rotate: [-25, 6, 0],
+                                opacity: [0, 1, 1, 0],
+                            }}
+                            transition={{
+                                times: [0, 0.35, 0.5, 1],
+                                duration: 2.3,
+                                ease: "backOut",
+                            }}
+                            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-neutral-900/90 text-white font-extrabold text-lg shadow-2xl border-2 border-white/80 backdrop-blur-md"
+                        >
+                            <span className="text-2xl">✨</span>
+                            <span>Ligne Clôturée !</span>
+                            <span className="text-2xl">🔒</span>
+                        </motion.div>
+                    </div>
                 )}
             </AnimatePresence>
-
-            <motion.div
-                onClick={rowFinished ? unFinishRow : () => console.log("You cannot finish this row at the moment")}
-                whileHover={rowFinished ? { scale: 1.1, rotate: 6 } : undefined}
-                whileTap={rowFinished ? { scale: 0.9 } : undefined}
-                className={`w-8 h-8 ml-4 rounded-full relative z-10 overflow-hidden border-2 shadow-sm ${styles.borderBtn} ${
-                    rowFinished ? "bg-white cursor-pointer" : "bg-gray-300 cursor-not-allowed opacity-75"
-                } flex items-center justify-center`}
-            >
-                <motion.img
-                    src={rowFinished ? "lock-close.svg" : "lock-open.svg"}
-                    alt="close row"
-                    className="w-4 h-4"
-                    animate={{ scale: rowFinished ? [0.7, 1] : 1, rotate: rowFinished ? [-30, 0] : 0 }}
-                    transition={{ type: "spring", stiffness: 350, damping: 15 }}
-                />
-            </motion.div>
-        </motion.div>
+        </div>
     );
 }
 
@@ -170,7 +266,6 @@ interface buttonParams {
 function RowButton({ color, number, checked, canCheck, onPress }: buttonParams) {
     const styles = colorStyles[color];
 
-    // Détection de la perte d'accessibilité et du passage à l'état coché
     const prevCanCheckRef = useRef(canCheck);
     const prevCheckedRef = useRef(checked);
     const [justLocked, setJustLocked] = useState(false);
@@ -229,7 +324,6 @@ function RowButton({ color, number, checked, canCheck, onPress }: buttonParams) 
                 checked ? styles.bgChecked : "bg-white"
             } ${canCheck ? "cursor-pointer" : "cursor-not-allowed"} flex items-center justify-center`}
         >
-            {/* Voile sombre & croix de pénalité / perte */}
             <AnimatePresence>
                 {isLockedOut && (
                     <motion.div
