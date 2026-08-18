@@ -6,6 +6,8 @@ import Button from "@/app/components/button";
 import { GameUtil } from "@/app/util/gameUtil";
 import MalusBtn from "@/app/components/malusBtn";
 import ScoreCase from "@/app/components/scoreCase";
+import { motion } from "framer-motion";
+import CLink from "@/app/components/link";
 
 const Row = dynamic(() => import('@/app/components/row'), { ssr: false });
 
@@ -39,24 +41,29 @@ export default function Game() {
     };
 
     return (
-        <div className="flex min-h-screen w-full justify-center items-center overflow-hidden">
+        <motion.div
+            initial={{background: "linear-gradient(to top, #011c3a, #011c3a)"}}
+            animate={{background: "linear-gradient(to top, #011c3a, #026ba5)"}}
+            transition={{duration: 1}}
+            className="flex min-h-screen w-full justify-center items-center overflow-hidden">
             <div
                 className={`flex flex-col justify-center items-center gap-2 p-2 transition-transform duration-300 ${
                     isPortrait ? "rotate-90 scale-90" : ""
                 }`}
             >
+                <div className={"flex self-end items-center justify-center gap-2"}>
+                    <CLink small={true} title={"Accueil"} endpoint={"/"}/>
+                </div>
+
                 <div className="flex flex-col items-center gap-2 w-fit">
-                    <div className="flex justify-end items-center gap-2 w-full">
-                        <Button title="Reset" onClickAction={handleReset} />
-                    </div>
 
                     <Row key={`red-${resetKey}`} color="red" />
-                    <Row key={`yellow-${resetKey}`} color="yellow" />
-                    <Row key={`green-${resetKey}`} color="green" />
-                    <Row key={`blue-${resetKey}`} color="blue" />
+                    <Row key={`yellow-${resetKey}`} color="yellow" delay={0.2}/>
+                    <Row key={`green-${resetKey}`} color="green" delay={0.4}/>
+                    <Row key={`blue-${resetKey}`} color="blue" delay={0.6}/>
 
-                    <div className="flex justify-end items-center gap-2 w-full">
-                        <p>Malus : </p>
+                    <div className="flex text-white font-bold justify-end items-center gap-2 w-fit self-end">
+                        <p>Malus</p>
                         {Array.from({ length: 4 }, (_, i) => i + 1).map((num) => (
                             <MalusBtn key={`malus-${num}-${resetKey}`} initChecked={GameUtil.getMalus() >= num} />
                         ))}
@@ -73,10 +80,10 @@ export default function Game() {
                         <p>-</p>
                         <ScoreCase color={"gray"} value={GameUtil.totalMalus()} />
                         <p>=</p>
-                        <ScoreCase color={"gray"} value={GameUtil.total()} />
+                        <ScoreCase color={"black"} value={GameUtil.total()} />
                     </div>
                 </div>
             </div>
-        </div>
+        </motion.div>
     );
 }
